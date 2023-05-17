@@ -1,42 +1,45 @@
-# Maintainer: Barnabé di Kartola <barnabedikartola@gmail.com>
+# Maintainer: Luis Martinez <luis dot martinez at disroot dot org>
 
-pkgname=biglinux-package-template
-pkgdesc="Package template for biglinux"
-# depends=('')
-# makedepends=('')
-# conflicts=('')
-pkgver=$(date +%y.%m.%d)
-pkgrel=$(date +%H%M)
-arch=('any')
-license=('GPL3')
-url="https://github.com/biglinux/$pkgname"
-provides=("$pkgname")
-source=("git+${url}.git")
+pkgname=tai-git
+pkgver=0.0.5.r8.gcbfc87b
+pkgrel=1
+pkgdesc="terminal ascii image -- convert images to ascii art"
+arch=('x86_64' 'i686' 'arm' 'armv7h' 'aarch64')
+url="https://github.com/MustafaSalih1993/tai"
+license=('MIT')
+depends=('gcc-libs')
+makedepends=('git' 'cargo')
+provides=('tai')
+conflicts=('tai')
+source=("$pkgname::git+$url")
 md5sums=('SKIP')
-if [ -e "${pkgname}.install" ];then
-    install=${pkgname}.install
-elif [ -e "pkgbuild.install" ];then
-    install=pkgbuild.install
-fi
+
+pkgver() {
+	git -C "$pkgname" describe --long --tags | sed 's/^v//;s/-/.r/;s/-/./'
+}
+
+prepare() {
+	cd "$pkgname"
+	cargo update
+	cargo fetch --locked --target "$CARCH-unknown-linux-gnu"
+}
+
+build() {
+	export RUSTUP_TOOLCHAIN=stable
+	export CARGO_TARGET_DIR=target
+	cd "$pkgname"
+	cargo build --release --frozen --all-features
+}
+
+check() {
+	export RUSTUP_TOOLCHAIN=stable
+	cd "$pkgname"
+	cargo test --frozen --all-features
+}
 
 package() {
-    # Verify default folder
-    if [ -d "${srcdir}/${pkgname}/${pkgname}" ]; then
-        InternalDir="${srcdir}/${pkgname}/${pkgname}"
-    else
-        InternalDir="${srcdir}/${pkgname}"
-    fi
-
-    # Copy files
-    if [ -d "${InternalDir}/usr" ]; then
-        cp -r "${InternalDir}/usr" "${pkgdir}/"
-    fi
-
-    if [ -d "${InternalDir}/etc" ]; then
-        cp -r "${InternalDir}/etc" "${pkgdir}/"
-    fi
-
-    if [ -d "${InternalDir}/opt" ]; then
-        cp -r "${InternalDir}/opt" "${pkgdir}/"
-    fi
+	cd "$pkgname"
+	install -Dm 755 target/release/tai -t "$pkgdir/usr/bin/"
+	install -Dm 444 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"
+	install -Dm 444 README.md -t "$pkgdir/usr/share/doc/$pkgname/"
 }
