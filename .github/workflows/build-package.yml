@@ -4,6 +4,11 @@ on:
   workflow_dispatch:
 
   push:
+    paths-ignore:
+      - COPYING
+      - README.md
+      - LICENSE
+      - '.github/workflows/**'
     branches: [ "*" ]
 
 jobs:
