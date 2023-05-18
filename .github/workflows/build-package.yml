@@ -6,8 +6,7 @@ on:
   push:
     paths-ignore:
       - COPYING
-      - README.md
-      - LICENSE
+
     branches: [ "*" ]
 
 jobs:
