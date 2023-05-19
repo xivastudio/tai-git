@@ -4,7 +4,9 @@ on:
   workflow_dispatch:
 
   push:
-    branches: [ "*", "main", "stable" ]
+    branches:
+      - main
+      - 'releases/**'
     paths-ignore:
       - COPYING
       - README.md
